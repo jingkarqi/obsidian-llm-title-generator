@@ -1,10 +1,14 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type LlmTitleGeneratorPlugin from "./main";
+import { createChatCompletion } from "./services/llm/openaiChatCompletions";
 
 export interface LlmTitleGeneratorSettings {
 	apiKey: string;
 	baseUrl: string;
 	model: string;
+
+	systemPrompt: string;
+	userPromptTemplate: string;
 
 	maxInputChars: number;
 	maxTitleChars: number;
@@ -24,6 +28,28 @@ export const DEFAULT_SETTINGS: LlmTitleGeneratorSettings = {
 	apiKey: "",
 	baseUrl: "https://api.openai.com/v1",
 	model: "gpt-4o-mini",
+
+	systemPrompt: [
+		"你是一个写作与整理助手。",
+		"任务：根据给定的 Obsidian 笔记内容，为该笔记生成一个适合作为“文件名”的标题。",
+		"要求：只输出标题本身，不要解释，不要加引号，不要换行。",
+	].join("\n"),
+
+	userPromptTemplate: [
+		"请生成一个标题：",
+		`- 只输出标题文本（不要“标题：”前缀）`,
+		`- 不要包含引号/书名号/反引号`,
+		`- 不要包含换行`,
+		`- 尽量使用笔记主要语言（中文/英文）`,
+		`- 标题不超过 {{maxTitleChars}} 个字符`,
+		`- 避免使用文件名非法字符：\\ / : * ? \" < > |`,
+		`- 不要以句号/冒号等结尾标点收尾`,
+		"",
+		"笔记内容片段如下：",
+		"----- BEGIN NOTE -----",
+		"{{noteSnippet}}",
+		"----- END NOTE -----",
+	].join("\n"),
 
 	maxInputChars: 3000,
 	maxTitleChars: 60,
@@ -111,6 +137,66 @@ export class LlmTitleGeneratorSettingTab extends PluginSettingTab {
 						this.plugin.settings.model = value.trim();
 						await this.plugin.saveSettings();
 					}),
+			);
+
+		containerEl.createEl("h3", { text: "提示词" });
+
+		new Setting(containerEl)
+			.setName("System prompt")
+			.setDesc("用于 system role。支持变量：{{maxTitleChars}}。")
+			.addTextArea((text) => {
+				text.inputEl.rows = 5;
+				text.setValue(this.plugin.settings.systemPrompt).onChange(async (value) => {
+					this.plugin.settings.systemPrompt = value;
+					await this.plugin.saveSettings();
+				});
+			})
+			.addButton((btn) =>
+				btn.setButtonText("重置").onClick(async () => {
+					this.plugin.settings.systemPrompt = DEFAULT_SETTINGS.systemPrompt;
+					await this.plugin.saveSettings();
+					this.display();
+				}),
+			);
+
+		new Setting(containerEl)
+			.setName("User prompt template")
+			.setDesc("用于 user role。支持变量：{{maxTitleChars}}、{{noteSnippet}}。")
+			.addTextArea((text) => {
+				text.inputEl.rows = 12;
+				text.setValue(this.plugin.settings.userPromptTemplate).onChange(async (value) => {
+					this.plugin.settings.userPromptTemplate = value;
+					await this.plugin.saveSettings();
+				});
+			})
+			.addButton((btn) =>
+				btn.setButtonText("重置").onClick(async () => {
+					this.plugin.settings.userPromptTemplate = DEFAULT_SETTINGS.userPromptTemplate;
+					await this.plugin.saveSettings();
+					this.display();
+				}),
+			);
+
+		new Setting(containerEl)
+			.setName("测试 API 配置")
+			.setDesc("向 /chat/completions 发送一条最小测试消息，用于检查 Base URL / Key / Model 是否可用。")
+			.addButton((btn) =>
+				btn.setButtonText("测试").setCta().onClick(async () => {
+					try {
+						const content = await createChatCompletion(
+							{ ...this.plugin.settings, maxTokens: Math.min(16, this.plugin.settings.maxTokens) },
+							[
+								{ role: "system", content: "You are a helpful assistant." },
+								{ role: "user", content: "Reply with OK only." },
+							],
+						);
+						const preview = content.trim().slice(0, 80);
+						new Notice(`测试成功：${preview || "OK"}`);
+					} catch (err) {
+						const message = err instanceof Error ? err.message : String(err);
+						new Notice(`测试失败：${message}`);
+					}
+				}),
 			);
 
 		new Setting(containerEl)
@@ -248,4 +334,3 @@ export class LlmTitleGeneratorSettingTab extends PluginSettingTab {
 			);
 	}
 }
-

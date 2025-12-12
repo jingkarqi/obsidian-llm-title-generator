@@ -6,6 +6,7 @@ import * as assert from "node:assert/strict";
 import { TFile, __getNotices, __setRequestUrlMock } from "../__mocks__/obsidian";
 
 import { generateTitlesAndRenameFiles } from "../../src/workflows/generateTitlesAndRenameFiles";
+import { DEFAULT_SETTINGS } from "../../src/settings";
 
 function createPlugin(options?: {
 	settings?: Partial<any>;
@@ -35,18 +36,12 @@ function createPlugin(options?: {
 			},
 		},
 		settings: {
+			...DEFAULT_SETTINGS,
 			apiKey: "sk-test",
 			baseUrl: "https://example.com/v1",
 			model: "gpt-test",
-			maxInputChars: 3000,
-			maxTitleChars: 60,
-			temperature: 0.2,
-			maxTokens: 64,
 			confirmBeforeSend: false,
 			confirmBeforeBatch: false,
-			vaultBatchLimit: 0,
-			delayMsBetweenRequests: 0,
-			requestTimeoutMs: 60_000,
 			...(options?.settings ?? {}),
 		},
 	};

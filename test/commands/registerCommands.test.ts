@@ -6,6 +6,7 @@ import * as assert from "node:assert/strict";
 import { TFile, __getNotices, __setRequestUrlMock } from "../__mocks__/obsidian";
 
 import { registerCommands } from "../../src/commands/registerCommands";
+import { DEFAULT_SETTINGS } from "../../src/settings";
 
 function createPlugin(options?: {
 	activeFilePath?: string | null;
@@ -25,18 +26,12 @@ function createPlugin(options?: {
 
 	const plugin: any = {
 		settings: {
+			...DEFAULT_SETTINGS,
 			apiKey: "sk-test",
 			baseUrl: "https://example.com/v1",
 			model: "gpt-test",
-			maxInputChars: 3000,
-			maxTitleChars: 60,
-			temperature: 0.2,
-			maxTokens: 64,
 			confirmBeforeSend: false,
 			confirmBeforeBatch: false,
-			vaultBatchLimit: 0,
-			delayMsBetweenRequests: 0,
-			requestTimeoutMs: 60_000,
 			...(options?.settings ?? {}),
 		},
 		addCommand: (cmd: any) => commands.push(cmd),

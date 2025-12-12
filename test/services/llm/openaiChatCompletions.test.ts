@@ -5,21 +5,14 @@ import * as assert from "node:assert/strict";
 
 import { __setRequestUrlMock } from "../../__mocks__/obsidian";
 import { createChatCompletion, type ChatMessage } from "../../../src/services/llm/openaiChatCompletions";
-import type { LlmTitleGeneratorSettings } from "../../../src/settings";
+import { DEFAULT_SETTINGS, type LlmTitleGeneratorSettings } from "../../../src/settings";
 
 function settings(overrides: Partial<LlmTitleGeneratorSettings> = {}): LlmTitleGeneratorSettings {
 	return {
+		...DEFAULT_SETTINGS,
 		apiKey: "sk-test",
 		baseUrl: "https://example.com/v1/",
 		model: "gpt-test",
-		maxInputChars: 3000,
-		maxTitleChars: 60,
-		temperature: 0.2,
-		maxTokens: 64,
-		confirmBeforeSend: true,
-		confirmBeforeBatch: true,
-		vaultBatchLimit: 0,
-		delayMsBetweenRequests: 0,
 		requestTimeoutMs: 1000,
 		...overrides,
 	};
