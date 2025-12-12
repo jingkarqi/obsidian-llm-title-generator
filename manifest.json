@@ -1,0 +1,11 @@
+{
+	"id": "llm-title-generator",
+	"name": "LLM 标题生成器",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "调用 OpenAI 兼容 Chat Completions 接口为笔记生成标题，并重命名文件。",
+	"author": "",
+	"authorUrl": "",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}
