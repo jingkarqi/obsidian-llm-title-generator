@@ -30,7 +30,8 @@
 
 ## Testing Guidelines
 
-No automated test suite is configured. Validate changes by running in Obsidian:
+- Unit tests: `npm test` (compiles to `dist-test/` and runs the `test/` suite).
+- Still validate in Obsidian for integration/regression:
 
 1. `npm run build`
 2. Copy `manifest.json`, `styles.css`, and the built `main.js` into `<Vault>/.obsidian/plugins/llm-title-generator/`

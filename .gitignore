@@ -11,6 +11,9 @@ node_modules
 # local npm cache (optional)
 .npm-cache
 
+# test build output
+dist-test
+
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
